@@ -111,7 +111,7 @@ Add the `d2` MCP server to your respective MCP Clients config:
     "mcpServers": {
         "d2": {
             "command": "docker",
-            "args": ["run", "--rm", "-i", "d2-mcp"]
+            "args": ["run", "--rm", "-i", "ghcr.io/h0rv/d2-mcp:main"]
         }
     }
 }
@@ -123,7 +123,7 @@ Add the `d2` MCP server to your respective MCP Clients config:
     "mcpServers": {
         "d2": {
             "command": "docker",
-            "args": ["run", "--rm", "-i", "-v", "./:/data", "d2-mcp"]
+            "args": ["run", "--rm", "-i", "-v", "./:/data", "ghcr.io/h0rv/d2-mcp:main"]
         }
     }
 }
