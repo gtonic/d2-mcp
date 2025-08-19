@@ -15,18 +15,21 @@ import (
 
 // getCodeFromRequest extracts D2 code from either the "code" parameter or by reading from "file_path"
 func getCodeFromRequest(request mcp.CallToolRequest) (string, error) {
-	// Check if code is provided directly
-	if code, ok := request.Params.Arguments["code"].(string); ok && code != "" {
-		return code, nil
-	}
-
-	// Check if file_path is provided
-	if filePath, ok := request.Params.Arguments["file_path"].(string); ok && filePath != "" {
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			return "", errors.New("failed to read file: " + err.Error())
+	// Extract arguments as a map first
+	if args, ok := request.Params.Arguments.(map[string]any); ok {
+		// Check if code is provided directly
+		if code, ok := args["code"].(string); ok && code != "" {
+			return code, nil
 		}
-		return string(content), nil
+
+		// Check if file_path is provided
+		if filePath, ok := args["file_path"].(string); ok && filePath != "" {
+			content, err := os.ReadFile(filePath)
+			if err != nil {
+				return "", errors.New("failed to read file: " + err.Error())
+			}
+			return string(content), nil
+		}
 	}
 
 	return "", errors.New("either 'code' or 'file_path' parameter must be provided")
@@ -109,13 +112,15 @@ func RenderD2Handler(
 
 	// Write to file if --write-files flag is enabled AND file_path was provided
 	if GlobalWriteFiles {
-		if filePath, ok := request.Params.Arguments["file_path"].(string); ok && filePath != "" {
-			outputPath := generateOutputFilename(filePath, GlobalImageType)
-			err := os.WriteFile(outputPath, img, 0644)
-			if err != nil {
-				return nil, errors.New("failed to write output file: " + err.Error())
+		if args, ok := request.Params.Arguments.(map[string]any); ok {
+			if filePath, ok := args["file_path"].(string); ok && filePath != "" {
+				outputPath := generateOutputFilename(filePath, GlobalImageType)
+				err := os.WriteFile(outputPath, img, 0644)
+				if err != nil {
+					return nil, errors.New("failed to write output file: " + err.Error())
+				}
+				return mcp.NewToolResultText("D2 diagram rendered to: " + outputPath), nil
 			}
-			return mcp.NewToolResultText("D2 diagram rendered to: " + outputPath), nil
 		}
 	}
 
